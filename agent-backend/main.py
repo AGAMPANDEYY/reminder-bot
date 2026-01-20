@@ -346,6 +346,13 @@ def parse_datetime(date_str: str, timezone_str: str = DEFAULT_TIMEZONE) -> Optio
     except Exception:
         return None
 
+def normalize_date_only(date_str: str, timezone_str: str = DEFAULT_TIMEZONE) -> str:
+    epoch = parse_datetime(date_str, timezone_str)
+    if not epoch:
+        return date_str
+    dt = datetime.fromtimestamp(epoch)
+    return dt.strftime("%Y-%m-%d")
+
 def format_day_ordinal(day: int) -> str:
     if 11 <= day % 100 <= 13:
         suffix = "th"
@@ -647,11 +654,12 @@ def execute_create_reminder(
             category = infer_category(title, description)
             common_times = get_common_times_by_category(user_id)
             suggested_time = common_times.get(category)
+            normalized_due = normalize_date_only(due_str)
             pending_actions[user_id] = {
                 "type": "confirm_time",
                 "title": title,
                 "description": description,
-                "due_str": due_str,
+                "due_str": normalized_due,
                 "category": category,
                 "suggested_time": suggested_time,
             }
