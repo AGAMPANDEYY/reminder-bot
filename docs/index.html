@@ -506,6 +506,23 @@ Keep it human, helpful, and focused on the user's goals."""</code></pre>
           }, 1500);
         });
       });
+      const navLinks = Array.from(document.querySelectorAll(".sidebar-nav a"));
+      const observedSections = navLinks
+        .map((link) => document.querySelector(link.getAttribute("href")))
+        .filter(Boolean);
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const id = entry.target.getAttribute("id");
+            navLinks.forEach((link) => {
+              link.classList.toggle("active", link.getAttribute("href") === `#${id}`);
+            });
+          });
+        },
+        { rootMargin: "-20% 0px -65% 0px", threshold: 0.1 }
+      );
+      observedSections.forEach((section) => observer.observe(section));
     </script>
   </body>
 </html>

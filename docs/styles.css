@@ -283,6 +283,11 @@ code,
   color: var(--accent);
 }
 
+.sidebar-nav a.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 @media (max-width: 720px) {
   h1 {
     font-size: 2rem;
