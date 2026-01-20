@@ -1261,8 +1261,8 @@ def get_mem0_context(user_message: str, user_id: str = "default_user", skip_mem0
     mem0_context = {
         "active_reminders": [],
         "rescheduled_active_reminders": [],
-        "preferences": pref_memories,
-        "behavior": behavior_memories,
+        "preferences": [item.get("memory") for item in pref_memories if item.get("memory")],
+        "behavior": [item.get("memory") for item in behavior_memories if item.get("memory")],
         "conversation_history": []
     }
     debug_context["retrieved_memories"] = mem0_context
