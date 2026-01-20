@@ -41,7 +41,15 @@ You are a memory system for a reminder assistant. Follow these guidelines:
 4. When storing preferences:
    - Include: preference key and value
    - Assign category: "user_prefs"
-   - Include metadata: pref_key
+   - Include metadata: pref_key, pref_value, category (e.g., "work", "personal")
+   - Capture scheduling patterns (example keys):
+     - reminder_time:work = "09:30"
+     - reminder_time:family = "18:00"
+     - reminder_time:health = "10:00"
+   - Capture contextual preferences (example keys):
+     - default_timezone = "Asia/Kolkata"
+     - meeting_window:work = "09:00-12:00"
+     - followup_style = "gentle"
 
 5. When storing conversation history:
    - Store only meaningful exchanges
