@@ -103,7 +103,7 @@
           They are facts.
         </p>
         <p>
-          If a reminder exists, it must fire. If it is marked done, it must never fire again. No model reasoning, no prompt context, no long-term memory is allowed to override that reality.
+          If a reminder exists, it must fire. If it is marked done, it must never fire again. That invariant lives in a system-of-record database and is injected into the system prompt on every turn. The model sees the real reminder state, not a recollection of it.
         </p>
         <p>
           All of that lives in a traditional system-of-record database.
@@ -124,7 +124,7 @@
           What categories do they implicitly use?
         </p>
         <p>
-          Mem0 is used exclusively for this second class of information.
+          Mem0 is used for this second class of information, plus a mirrored memory trail of reminders for recall and continuity. We write active and archived reminders into Mem0 categories, but the model is never allowed to treat those as truth. The DB is the truth. Mem0 is the personalization layer.
         </p>
         <p>
           This boundary is what allows the system to be both adaptive and correct. The agent can learn without becoming the source of truth. And that distinction is exactly what breaks down in most memory-augmented agents.
@@ -352,18 +352,17 @@
       <section class="section" id="prompt-building">
         <h2>Prompt building: truth first, memory second</h2>
         <p>
-          The prompt is assembled from two very different sources. First, we load
-          the current reminder state from the database so the model always sees
-          what is actually true. Then we enrich with Mem0-derived behavior and
-          preference signals, such as common confirmation times and snooze habits.
-          This keeps the assistant personalized without letting memory override
-          reality.
+          The prompt is assembled from two sources with different guarantees. First,
+          we load the current reminder state from the database and render it directly
+          into the system prompt. This makes the model’s view of reality deterministic:
+          it can’t hallucinate or override actual reminder status. Second, we enrich
+          with Mem0 signals—preferences and behavior summaries—so the agent can adapt
+          without drifting. We intentionally keep that memory slice small and targeted.
         </p>
         <p>
-          We keep context intentionally slim: active reminders and rescheduled
-          reminders from the DB, plus targeted memory queries for preferences and
-          behavior. This works as implicit guidance without relying on brittle
-          few-shot examples that can go stale.
+          The result is a prompt that feels personalized but stays grounded. It’s
+          enough to suggest a default time or interpret a user’s pattern, but not
+          enough to blur the boundary between memory and state.
         </p>
         <p>
           [CODE PLACEHOLDER: system prompt assembly showing DB reminders + Mem0 memory context]
@@ -414,7 +413,7 @@
       <section class="section" id="mem0">
         <h2>Mem0: long-term memory without drift</h2>
         <p>
-          Mem0 stores reminders and preferences using explicit categories:
+          Mem0 stores long-term signals and a mirrored reminder history using explicit categories:
         </p>
         <p>
           Active reminders
@@ -433,6 +432,9 @@
         </p>
         <p>
           When a reminder is marked done, its active memory is removed and an archived memory is written instead. This avoids stale memory influencing future behavior while keeping history searchable.
+        </p>
+        <p>
+          The mirror is never treated as authoritative state. It’s there to improve recall and personalization, not to decide what should fire.
         </p>
         <p>
           Behavior is summarized rather than logged raw. The model sees patterns, not noise.
