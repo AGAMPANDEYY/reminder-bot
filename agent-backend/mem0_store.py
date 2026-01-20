@@ -49,7 +49,9 @@ class Mem0Store:
         self.debug = os.getenv("MEM0_DEBUG", "").lower() in ("1", "true", "yes", "on")
         self.add_retry_count = 0
         self.add_retry_delay = 0.0
-        self.store_raw_messages = os.getenv("MEM0_STORE_RAW_MESSAGES", "1").lower() in ("1", "true", "yes", "on")
+        default_instructions = os.path.join(os.path.dirname(__file__), "mem0_instructions.yml")
+        self.custom_instructions_path = os.getenv("MEM0_CUSTOM_INSTRUCTIONS_PATH", default_instructions)
+        self.custom_instructions = self._load_custom_instructions(self.custom_instructions_path)
         
         # Category constants
         self.CAT_REMINDER_ACTIVE = "reminder_active"
@@ -63,6 +65,36 @@ class Mem0Store:
         if self.debug and _is_empty_add_response(result):
             print("Mem0 add returned empty response")
         return result
+
+    def _load_custom_instructions(self, path: str) -> str:
+        """Load custom instructions text from a YAML file."""
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                text = handle.read()
+        except Exception:
+            return ""
+
+        if not text:
+            return ""
+
+        lines = text.splitlines()
+        for idx, line in enumerate(lines):
+            if line.strip().startswith("instructions:"):
+                remainder = line.split("instructions:", 1)[1].strip()
+                if remainder in ("|", ">") or remainder == "":
+                    block = []
+                    for next_line in lines[idx + 1:]:
+                        if next_line.strip() == "":
+                            block.append("")
+                            continue
+                        if next_line.startswith(("  ", "\t")):
+                            block.append(next_line.lstrip())
+                            continue
+                        break
+                    return "\n".join(block).strip()
+                return remainder.strip()
+
+        return text.strip()
 
     def _search_with_filters(self, **kwargs) -> List[Dict[str, Any]]:
         """Wrapper to satisfy Mem0 Platform search filter requirements."""
@@ -456,31 +488,28 @@ class Mem0Store:
             print(f"Mem0 upsert behavior error: {e}")
             return None
 
-    def add_raw_message(
+    def add_message(
         self,
-        text: str,
+        messages: List[Dict[str, str]],
         user_id: str = "default_user",
     ) -> Optional[str]:
-        """Send raw messages to Mem0 so it can decide what to store."""
-        if not self.store_raw_messages:
-            if self.debug:
-                print("Mem0 raw message storage disabled by MEM0_STORE_RAW_MESSAGES")
-            return None
+        """Send messages to Mem0 using inference and custom instructions."""
         try:
             result = self._add_with_retry(
-                messages=[{"role": "user", "content": text}],
+                messages=messages,
                 user_id=user_id,
+                custom_instructions=self.custom_instructions or None,
                 async_mode=False,
             )
             if self.debug:
-                print("Mem0 add (raw) payload:", {"user_id": user_id})
-                print("Mem0 add (raw) raw response:", result)
+                print("Mem0 add (inference) payload:", {"user_id": user_id})
+                print("Mem0 add (inference) raw response:", result)
             mem_id = _extract_memory_id(result)
             if not mem_id and self.debug:
-                print("Mem0 add response (raw):", result)
+                print("Mem0 add response (inference):", result)
             return mem_id
         except Exception as e:
-            print(f"Mem0 add raw message error: {e}")
+            print(f"Mem0 add message error: {e}")
             return None
 
     def delete_memory(self, memory_id: str) -> bool:

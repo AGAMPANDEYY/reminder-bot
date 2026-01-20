@@ -1272,9 +1272,9 @@ def get_mem0_context(user_message: str, user_id: str = "default_user", skip_mem0
 async def run_agentic_loop(user_message: str, user_id: str = "default_user") -> str:
     """Main agentic loop with Claude"""
 
-    # Let Mem0 decide what to store from raw user messages.
+    # Let Mem0 infer memories from the raw user message.
     try:
-        mem0_store.add_raw_message(f"User: {user_message}", user_id=user_id)
+        mem0_store.add_message([{"role": "user", "content": user_message}], user_id=user_id)
     except Exception:
         pass
 
@@ -1514,13 +1514,13 @@ Keep it human, helpful, and focused on the user's goals."""
             # Store assistant response for Mem0 to decide what to keep.
             if BACKGROUND_MEM0_WRITES:
                 run_in_background(
-                    mem0_store.add_raw_message,
-                    f"Assistant: {final_text}",
+                    mem0_store.add_message,
+                    [{"role": "assistant", "content": final_text}],
                     user_id
                 )
             else:
-                mem0_store.add_raw_message(
-                    f"Assistant: {final_text}",
+                mem0_store.add_message(
+                    [{"role": "assistant", "content": final_text}],
                     user_id
                 )
 
@@ -1555,13 +1555,13 @@ Keep it human, helpful, and focused on the user's goals."""
                                         pass
                                 if BACKGROUND_MEM0_WRITES:
                                     run_in_background(
-                                        mem0_store.add_raw_message,
-                                        f"Assistant: {prompt}",
+                                        mem0_store.add_message,
+                                        [{"role": "assistant", "content": prompt}],
                                         user_id
                                     )
                                 else:
-                                    mem0_store.add_raw_message(
-                                        f"Assistant: {prompt}",
+                                    mem0_store.add_message(
+                                        [{"role": "assistant", "content": prompt}],
                                         user_id
                                     )
                                 return prompt
