@@ -19,9 +19,20 @@ body {
 }
 
 .page {
-  max-width: 840px;
   margin: 0 auto;
   padding: 48px 20px 64px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 840px) 220px;
+  gap: 32px;
+  justify-content: center;
+}
+
+.content {
+  max-width: 840px;
+  width: 100%;
 }
 
 .hero__brand {
@@ -241,8 +252,50 @@ code,
   border-top: 1px solid var(--stroke);
 }
 
+.sidebar {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  padding-left: 12px;
+  border-left: 1px solid var(--stroke);
+}
+
+.sidebar-title {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sidebar-nav {
+  display: grid;
+  gap: 6px;
+}
+
+.sidebar-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+}
+
+.sidebar-nav a:hover {
+  color: var(--accent);
+}
+
 @media (max-width: 720px) {
   h1 {
     font-size: 2rem;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    border-left: none;
+    padding-left: 0;
+    margin-top: 24px;
   }
 }

@@ -21,8 +21,9 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="page">
-      <header>
+    <main class="page layout">
+      <div class="content">
+        <header>
         <div class="hero__brand">
           <img class="brand-logo" src="./assets/logo.png" alt="Mem0 logo" />
           <span class="brand-name">Mem0</span>
@@ -460,10 +461,31 @@ Keep it human, helpful, and focused on the user's goals."""</code></pre>
         </p>
       </section>
 
-      <footer class="footer">
-        <p>Built as a memory-first Slack agent, documented for builders.</p>
-        <p>Repo: <span class="code">/agent-backend</span></p>
-      </footer>
+        <footer class="footer">
+          <p>Built as a memory-first Slack agent, documented for builders.</p>
+          <p>Repo: <span class="code">/agent-backend</span></p>
+        </footer>
+      </div>
+      <aside class="sidebar" aria-label="On this page">
+        <p class="sidebar-title">On this page</p>
+        <nav class="sidebar-nav">
+          <a href="#part-one">Part I: Product story</a>
+          <a href="#truth-vs-memory">Truth vs. memory</a>
+          <a href="#from-idea-to-system">System architecture</a>
+          <a href="#part-two">Part II: Engineering</a>
+          <a href="#slack-ingestion">Slack integration</a>
+          <a href="#agent-loop">Agent loop</a>
+          <a href="#memory-prefetch">Memory retrieval</a>
+          <a href="#claude-agent">Claude agent</a>
+          <a href="#prompt-building">Prompt building</a>
+          <a href="#missing-time">Missing time flow</a>
+          <a href="#database">Database</a>
+          <a href="#mem0">Mem0 memory</a>
+          <a href="#notifications">Notifications</a>
+          <a href="#slack-app-setup">Slack app setup</a>
+          <a href="#what-this-enables">Key takeaway</a>
+        </nav>
+      </aside>
     </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script>
