@@ -46,7 +46,7 @@ class Mem0Store:
             org_id=os.getenv("MEM0_ORG_ID"),
             project_id=os.getenv("MEM0_PROJECT_ID")
         )
-        self.debug = os.getenv("MEM0_DEBUG", "").lower() in ("1", "true", "yes", "on")
+        self.debug = True
         self.add_retry_count = 0
         self.add_retry_delay = 0.0
         default_instructions = os.path.join(os.path.dirname(__file__), "mem0_instructions.yml")
@@ -61,9 +61,15 @@ class Mem0Store:
         self.CAT_USER_BEHAVIOR = "user_behavior"
 
     def _add_with_retry(self, **kwargs):
+        if self.debug:
+            debug_payload = dict(kwargs)
+            debug_payload.pop("custom_instructions", None)
+            print("Mem0 add request:", debug_payload)
         result = self.client.add(**kwargs)
         if self.debug and _is_empty_add_response(result):
             print("Mem0 add returned empty response")
+        if self.debug:
+            print("Mem0 add response:", result)
         return result
 
     def _load_custom_instructions(self, path: str) -> str:
@@ -107,12 +113,21 @@ class Mem0Store:
             if categories:
                 and_filters.append({"categories": {"in": categories}})
             kwargs.setdefault("filters", {"AND": and_filters})
+        if self.debug:
+            print("Mem0 search request:", {
+                "query": kwargs.get("query"),
+                "filters": kwargs.get("filters"),
+                "categories": kwargs.get("categories"),
+                "limit": kwargs.get("limit")
+            })
         try:
             results = self.client.search(**kwargs)
         except TypeError:
             # Older SDKs may not support filters/version.
             kwargs.pop("filters", None)
             results = self.client.search(**kwargs)
+        if self.debug:
+            print("Mem0 search raw response:", results)
 
         if isinstance(results, str):
             try:
