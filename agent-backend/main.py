@@ -1272,6 +1272,12 @@ def get_mem0_context(user_message: str, user_id: str = "default_user", skip_mem0
 async def run_agentic_loop(user_message: str, user_id: str = "default_user") -> str:
     """Main agentic loop with Claude"""
 
+    # Let Mem0 decide what to store from raw user messages.
+    try:
+        mem0_store.add_raw_message(f"User: {user_message}", user_id=user_id)
+    except Exception:
+        pass
+
     has_time = message_mentions_time(user_message)
     user_time_context[user_id] = {"has_time": has_time}
     pending = pending_actions.get(user_id)
@@ -1349,7 +1355,7 @@ async def run_agentic_loop(user_message: str, user_id: str = "default_user") -> 
             if result.get("success"):
                 return result.get("message", "Reminder updated.")
             return result.get("error", "Sorry, I couldn't update that reminder.")
-    
+
     # Get Mem0 context
     skip_mem0 = should_skip_mem0_prefetch(user_message)
     mem0_context = get_mem0_context(user_message, user_id, skip_mem0=skip_mem0)
@@ -1505,16 +1511,16 @@ Keep it human, helpful, and focused on the user's goals."""
                 except Exception:
                     pass
             
-            # Store conversation in Mem0
+            # Store assistant response for Mem0 to decide what to keep.
             if BACKGROUND_MEM0_WRITES:
                 run_in_background(
-                    mem0_store.add_conversation,
-                    f"User: {user_message}\nAssistant: {final_text}",
+                    mem0_store.add_raw_message,
+                    f"Assistant: {final_text}",
                     user_id
                 )
             else:
-                mem0_store.add_conversation(
-                    f"User: {user_message}\nAssistant: {final_text}",
+                mem0_store.add_raw_message(
+                    f"Assistant: {final_text}",
                     user_id
                 )
 
@@ -1549,13 +1555,13 @@ Keep it human, helpful, and focused on the user's goals."""
                                         pass
                                 if BACKGROUND_MEM0_WRITES:
                                     run_in_background(
-                                        mem0_store.add_conversation,
-                                        f"User: {user_message}\nAssistant: {prompt}",
+                                        mem0_store.add_raw_message,
+                                        f"Assistant: {prompt}",
                                         user_id
                                     )
                                 else:
-                                    mem0_store.add_conversation(
-                                        f"User: {user_message}\nAssistant: {prompt}",
+                                    mem0_store.add_raw_message(
+                                        f"Assistant: {prompt}",
                                         user_id
                                     )
                                 return prompt

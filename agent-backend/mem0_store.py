@@ -49,7 +49,7 @@ class Mem0Store:
         self.debug = os.getenv("MEM0_DEBUG", "").lower() in ("1", "true", "yes", "on")
         self.add_retry_count = 0
         self.add_retry_delay = 0.0
-        self.store_conversation = os.getenv("MEM0_STORE_CONVERSATION", "1").lower() in ("1", "true", "yes", "on")
+        self.store_raw_messages = os.getenv("MEM0_STORE_RAW_MESSAGES", "1").lower() in ("1", "true", "yes", "on")
         
         # Category constants
         self.CAT_REMINDER_ACTIVE = "reminder_active"
@@ -456,41 +456,31 @@ class Mem0Store:
             print(f"Mem0 upsert behavior error: {e}")
             return None
 
-    def add_conversation(
+    def add_raw_message(
         self,
         text: str,
         user_id: str = "default_user",
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> str:
-        """Add a conversation turn to memory"""
-        if not self.store_conversation:
+    ) -> Optional[str]:
+        """Send raw messages to Mem0 so it can decide what to store."""
+        if not self.store_raw_messages:
             if self.debug:
-                print("Mem0 conversation storage disabled by MEM0_STORE_CONVERSATION")
+                print("Mem0 raw message storage disabled by MEM0_STORE_RAW_MESSAGES")
             return None
-        metadata = _apply_category_metadata(metadata or {}, self.CAT_CONVERSATION)
-        metadata["timestamp"] = int(time.time())
-
         try:
             result = self._add_with_retry(
                 messages=[{"role": "user", "content": text}],
                 user_id=user_id,
-                metadata=metadata,
-                categories=[self.CAT_CONVERSATION],
                 async_mode=False,
             )
             if self.debug:
-                print("Mem0 add (conversation) payload:", {
-                    "user_id": user_id,
-                    "categories": [self.CAT_CONVERSATION],
-                    "metadata": metadata
-                })
-                print("Mem0 add (conversation) raw response:", result)
+                print("Mem0 add (raw) payload:", {"user_id": user_id})
+                print("Mem0 add (raw) raw response:", result)
             mem_id = _extract_memory_id(result)
-            if not mem_id:
-                print("Mem0 add response (conversation):", result)
+            if not mem_id and self.debug:
+                print("Mem0 add response (raw):", result)
             return mem_id
         except Exception as e:
-            print(f"Mem0 add conversation error: {e}")
+            print(f"Mem0 add raw message error: {e}")
             return None
 
     def delete_memory(self, memory_id: str) -> bool:
