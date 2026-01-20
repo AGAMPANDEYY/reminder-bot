@@ -1,12 +1,10 @@
 :root {
-  --bg: #f5f0e6;
-  --ink: #1a1a1a;
+  --bg: #ffffff;
+  --ink: #1d1d1f;
   --muted: #4a4a4a;
-  --accent: #e66a2c;
-  --accent-dark: #b64a12;
-  --card: #fff9ef;
-  --stroke: #e7dccb;
-  --shadow: rgba(28, 20, 10, 0.12);
+  --accent: #0b57d0;
+  --stroke: #e5e5e5;
+  --card: #ffffff;
 }
 
 * {
@@ -15,11 +13,9 @@
 
 body {
   margin: 0;
-  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
   color: var(--ink);
-  background: radial-gradient(1200px 900px at 10% -10%, #ffe9cc 0%, transparent 55%),
-    radial-gradient(1000px 900px at 90% -20%, #ffd8b6 0%, transparent 50%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .page {
@@ -29,111 +25,98 @@ body {
 }
 
 .hero {
-  padding: 48px 48px 56px;
-  background: linear-gradient(135deg, #fff3e4 0%, #fffdf7 45%, #ffecd7 100%);
-  border: 1px solid var(--stroke);
-  border-radius: 28px;
-  box-shadow: 0 20px 50px var(--shadow);
-  animation: rise 0.9s ease-out both;
+  padding: 32px 0 16px;
+  border-bottom: 1px solid var(--stroke);
 }
 
 .hero__brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
 }
 
 .brand-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 0 6px rgba(230, 106, 44, 0.15);
 }
 
 .brand-name {
-  color: var(--accent-dark);
+  color: var(--accent);
 }
 
 h1 {
-  font-family: "Fraunces", "Times New Roman", serif;
-  font-size: clamp(2.2rem, 4vw, 3.4rem);
-  margin: 20px 0 16px;
-  line-height: 1.1;
+  font-family: "Source Serif 4", "Times New Roman", serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  margin: 16px 0 12px;
+  line-height: 1.2;
 }
 
 .hero__lede {
-  font-size: 1.1rem;
-  max-width: 700px;
+  font-size: 1.05rem;
+  max-width: 760px;
   color: var(--muted);
 }
 
 .hero__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 8px;
+  margin-top: 18px;
 }
 
 .hero__meta span {
   border: 1px solid var(--stroke);
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-size: 0.85rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.82rem;
   background: #fff;
 }
 
 main {
-  margin-top: 48px;
+  margin-top: 36px;
   display: grid;
-  gap: 48px;
+  gap: 32px;
 }
 
 .toc {
-  padding: 28px;
-  border: 1px solid var(--stroke);
-  border-radius: 22px;
-  background: #fff;
-  animation: fade 0.8s ease-out 0.15s both;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--stroke);
 }
 
 .toc__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .toc__grid a {
-  padding: 12px 16px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
   text-decoration: none;
   color: var(--ink);
-  border: 1px dashed var(--stroke);
-  background: #fffaf1;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  border: 1px solid var(--stroke);
+  background: #fff;
 }
 
 .toc__grid a:hover {
-  transform: translateY(-2px);
   border-color: var(--accent);
 }
 
 .section {
-  padding: 32px 36px;
-  border-radius: 22px;
-  background: #fff;
-  border: 1px solid var(--stroke);
-  animation: fade 0.8s ease-out 0.2s both;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--stroke);
 }
 
 .section h2 {
-  font-family: "Fraunces", "Times New Roman", serif;
-  font-size: 2rem;
+  font-family: "Source Serif 4", "Times New Roman", serif;
+  font-size: 1.8rem;
   margin-top: 0;
 }
 
@@ -144,17 +127,16 @@ main {
 
 .cards {
   display: grid;
-  gap: 20px;
+  gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .card {
-  padding: 18px 18px 20px;
-  border-radius: 16px;
+  padding: 14px 14px 16px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--stroke);
-  box-shadow: 0 12px 24px rgba(28, 20, 10, 0.08);
 }
 
 .card h3 {
@@ -171,10 +153,10 @@ main {
 }
 
 .steps li {
-  padding: 18px 20px;
-  border-radius: 18px;
+  padding: 14px 16px;
+  border-radius: 8px;
   border: 1px solid var(--stroke);
-  background: #fffaf2;
+  background: #fff;
 }
 
 .steps h3 {
@@ -189,10 +171,10 @@ main {
 }
 
 .pill {
-  padding: 16px;
-  border-radius: 16px;
+  padding: 12px;
+  border-radius: 8px;
   border: 1px solid var(--stroke);
-  background: #fffaf1;
+  background: #fff;
 }
 
 .pill h3 {
@@ -200,23 +182,25 @@ main {
 }
 
 .callout {
-  margin-top: 20px;
-  padding: 20px;
-  border-radius: 18px;
-  background: #1f1b16;
-  color: #fff7ed;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--stroke);
+  background: #f8f8f8;
+  color: var(--ink);
 }
 
 .callout h3 {
   margin-top: 0;
-  color: #ffd6b0;
+  color: var(--ink);
 }
 
 pre {
   margin: 12px 0;
-  background: #14110e;
-  padding: 16px;
-  border-radius: 12px;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--stroke);
   overflow-x: auto;
 }
 
@@ -227,43 +211,13 @@ code,
 }
 
 .footer {
-  margin-top: 48px;
-  padding: 20px 6px;
+  margin-top: 32px;
+  padding: 12px 0;
   color: var(--muted);
-  text-align: center;
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fade {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  text-align: left;
 }
 
 @media (max-width: 720px) {
-  .hero {
-    padding: 32px 24px 40px;
-  }
-
-  .section {
-    padding: 24px;
-  }
-
   h1 {
     font-size: 2rem;
   }
