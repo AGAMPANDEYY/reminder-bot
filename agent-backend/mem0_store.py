@@ -1,5 +1,6 @@
 import os
 import time
+import json
 from typing import List, Dict, Any, Optional
 from mem0 import MemoryClient
 
@@ -62,6 +63,34 @@ class Mem0Store:
         if self.debug and _is_empty_add_response(result):
             print("Mem0 add returned empty response")
         return result
+
+    def _search_with_filters(self, **kwargs) -> List[Dict[str, Any]]:
+        """Wrapper to satisfy Mem0 v2 search filter requirements."""
+        user_id = kwargs.get("user_id")
+        if user_id:
+            kwargs.setdefault("filters", {"AND": [{"user_id": user_id}]})
+        try:
+            results = self.client.search(**kwargs)
+        except TypeError:
+            kwargs.pop("filters", None)
+            results = self.client.search(**kwargs)
+        if isinstance(results, str):
+            try:
+                results = json.loads(results)
+            except Exception:
+                if self.debug:
+                    print("Mem0 search returned non-JSON string:", results)
+                return []
+        if isinstance(results, dict):
+            if results.get("error"):
+                if self.debug:
+                    print("Mem0 search error:", results)
+                return []
+            if isinstance(results.get("memories"), list):
+                return results["memories"]
+        if not isinstance(results, list):
+            return []
+        return results
     
     def search_reminders(
         self, 
@@ -77,14 +106,14 @@ class Mem0Store:
         category = self.CAT_REMINDER_ACTIVE if active_only else self.CAT_REMINDER_ARCHIVED
         
         try:
-            results = self.client.search(
+            results = self._search_with_filters(
                 query=query,
                 user_id=user_id,
                 categories=[category],
                 limit=limit
             )
             if not results:
-                results = self.client.search(
+                results = self._search_with_filters(
                     query=query,
                     user_id=user_id,
                     limit=limit
@@ -123,11 +152,11 @@ class Mem0Store:
     ) -> List[Dict[str, Any]]:
         """Search user preferences"""
         try:
-            results = self.client.search(
+            results = self._search_with_filters(
                 query=query,
                 user_id=user_id,
                 categories=[self.CAT_USER_PREFS],
-                    async_mode=False,
+                async_mode=False,
                 limit=limit
             )
             
@@ -152,7 +181,7 @@ class Mem0Store:
     ) -> List[Dict[str, Any]]:
         """Search conversation history"""
         try:
-            results = self.client.search(
+            results = self._search_with_filters(
                 query=query,
                 user_id=user_id,
                 categories=[self.CAT_CONVERSATION],
@@ -181,7 +210,7 @@ class Mem0Store:
     ) -> List[Dict[str, Any]]:
         """Search behavior summaries"""
         try:
-            results = self.client.search(
+            results = self._search_with_filters(
                 query=query,
                 user_id=user_id,
                 categories=[self.CAT_USER_BEHAVIOR],
@@ -216,7 +245,7 @@ class Mem0Store:
 
         if reminder_id:
             try:
-                results = self.client.search(
+                results = self._search_with_filters(
                     query=f"reminder_id:{reminder_id}",
                     user_id=user_id,
                     categories=[self.CAT_REMINDER_ACTIVE],
@@ -283,7 +312,7 @@ class Mem0Store:
             reminder_id = metadata.get("reminder_id")
             if reminder_id:
                 try:
-                    results = self.client.search(
+                    results = self._search_with_filters(
                         query=f"reminder_id:{reminder_id}",
                         user_id=user_id,
                         categories=[self.CAT_REMINDER_ACTIVE],
@@ -333,7 +362,7 @@ class Mem0Store:
 
             if pref_key:
                 try:
-                    results = self.client.search(
+                    results = self._search_with_filters(
                         query=f"pref_key:{pref_key}",
                         user_id=user_id,
                         categories=[self.CAT_USER_PREFS],
@@ -390,7 +419,7 @@ class Mem0Store:
 
         existing_memory_id = None
         try:
-            results = self.client.search(
+            results = self._search_with_filters(
                 query="behavior_summary",
                 user_id=user_id,
                 categories=[self.CAT_USER_BEHAVIOR],
