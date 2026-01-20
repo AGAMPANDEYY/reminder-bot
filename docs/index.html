@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MeowMemo: Memory-First Slack Reminder Agent</title>
+    <title>MeowMem0: Memory-First Slack Reminder Agent</title>
     <meta
       name="description"
       content="A technical, readable guide to building a memory-first Slack reminder agent with Mem0, FastAPI, and Slack events."
@@ -21,32 +21,20 @@
       <header>
         <div class="hero__brand">
           <span class="brand-dot"></span>
-          <span class="brand-name">MeowMemo</span>
+          <span class="brand-name">MeowMem0</span>
         </div>
         <h1>Building a Reminder Agent That Actually Remembers</h1>
         <p class="hero__lede">
           From a friendly Slack assistant to a memory-driven AI system you can build yourself
         </p>
         <p>
-          Most reminder bots work in the same shallow way.
-        </p>
-        <p>
-          They accept a command, schedule a job, send a notification, and move on. They don’t learn how you think about time. They don’t adapt to how you respond to reminders. And once a reminder is completed, it vanishes completely, as if it never existed.
-        </p>
-        <p>
-          That approach is fine if you’re building alarms. It fails quietly when you’re building assistants.
+          Most reminder bots work in the same shallow way. They accept a command, schedule a job, send a notification, and move on. They don’t learn how you think about time. They don’t adapt to how you respond to reminders. And once a reminder is completed, it vanishes completely, as if it never existed. That approach is fine if you’re building alarms. It fails quietly when you’re building assistants.
         </p>
         <p>
           A real reminder assistant is not just a scheduler. It’s a long-lived system that has to balance reliability with personalization. It must never forget an active reminder, never re-trigger a completed one, and yet still learn patterns like “this user usually snoozes by 10–15 minutes” or “work reminders tend to land in the morning.”
         </p>
         <p>
-          At <a href="https://mem0.ai/" target="_blank" rel="noopener noreferrer">Mem0</a>, we built MeowMem0, a Slack reminder agent, to explore what happens when memory is treated as a first-class architectural concern rather than an afterthought. The result is not just a better reminder experience, but a reusable pattern for building AI agents that can remember without hallucinating, adapt without drifting, and archive without forgetting.
-        </p>
-        <p>
-          This post tells that story in two parts.
-        </p>
-        <p>
-          We’ll start from a product perspective, what MeowMemo feels like to use and why it behaves differently from typical bots. Then we’ll switch gears into a deep engineering section that walks through the system design in enough detail that you could realistically build something similar yourself.
+          At <a href="https://mem0.ai/" target="_blank" rel="noopener noreferrer">Mem0</a>, we built MeowMem0, a Slack reminder agent, to explore what happens when memory is treated as a first-class architectural concern rather than an afterthought. The result is not just a better reminder experience, but a reusable pattern for building AI agents that can remember without hallucinating, adapt without drifting, and archive without forgetting. This post tells that story in two parts. We’ll start from a product perspective, what MeowMem0 feels like to use and why it behaves differently from typical bots. Then we’ll switch gears into a deep engineering section that walks through the system design in enough detail that you could realistically build something similar yourself.
         </p>
         <p class="meta-line">
           <a href="https://platform.claude.com/docs/en/agent-sdk/overview" target="_blank" rel="noopener noreferrer">Claude Agent SDK</a>
@@ -60,10 +48,7 @@
       <section class="section" id="part-one">
         <h2>Part I: The product story, why reminders expose the memory problem</h2>
         <p>
-          On the surface, MeowMem0 behaves exactly like you’d expect a modern Slack assistant to behave.
-        </p>
-        <p>
-          You can message it naturally:<br />
+          On the surface, MeowMem0 behaves exactly like you’d expect a modern Slack assistant to behave. You can message it naturally:<br />
           “Remind me to pay rent tomorrow.”<br />
           “Push that to 6pm.”<br />
           “Snooze this by 10 minutes.”<br />
@@ -81,59 +66,20 @@
           <figcaption>Slack reminder notification with Done and Snooze buttons.</figcaption>
         </figure>
         <p>
-          So far, this sounds like a lot of bots.
+          So far, this sounds like a lot of bots. The difference shows up over time. If you often confirm work reminders around 10am, MeowMem0 starts suggesting that time when you forget to specify one. If you regularly snooze by roughly 15 minutes, the agent learns that rhythm and reflects it back to you. And when a reminder is completed, it stops influencing future behavior, but it doesn’t disappear from your history.
         </p>
         <p>
-          The difference shows up over time.
-        </p>
-        <p>
-          If you often confirm work reminders around 10am, MeowMemo starts suggesting that time when you forget to specify one. If you regularly snooze by roughly 15 minutes, the agent learns that rhythm and reflects it back to you. And when a reminder is completed, it stops influencing future behavior, but it doesn’t disappear from your history.
-        </p>
-        <p>
-          This last point matters more than it sounds.
-        </p>
-        <p>
-          Most AI systems either forget too aggressively or remember too loosely. Forgetting loses valuable signal. Loose memory creates contradictions. MeowMem0 avoids both by separating two ideas that are often conflated:
-        </p>
-        <p>
-          What is true vs. what is remembered
-        </p>
-        <p>
-          That separation is the foundation of the entire system.
+          This last point matters more than it sounds. Most AI systems either forget too aggressively or remember too loosely. Forgetting loses valuable signal. Loose memory creates contradictions. MeowMem0 avoids both by separating two ideas that are often conflated: what is true vs. what is remembered. That separation is the foundation of the entire system.
         </p>
       </section>
 
       <section class="section" id="truth-vs-memory">
         <h2>Truth vs. memory: the design principle that changes everything</h2>
         <p>
-          In MeowMem0, reminders themselves are not “memories.”
+          In MeowMem0, reminders themselves are not “memories.” They are facts. If a reminder exists, it must fire. If it is marked done, it must never fire again. That invariant lives in a system-of-record database and is injected into the system prompt on every turn. The model sees the real reminder state, not a recollection of it. All of that lives in a traditional system-of-record database.
         </p>
         <p>
-          They are facts.
-        </p>
-        <p>
-          If a reminder exists, it must fire. If it is marked done, it must never fire again. That invariant lives in a system-of-record database and is injected into the system prompt on every turn. The model sees the real reminder state, not a recollection of it.
-        </p>
-        <p>
-          All of that lives in a traditional system-of-record database.
-        </p>
-        <p>
-          Memory, on the other hand, is used for something very different: behavior, preferences, and context. Memory answers questions like:
-        </p>
-        <p>
-          How does this user usually phrase reminders?
-        </p>
-        <p>
-          What time patterns do they tend to confirm?
-        </p>
-        <p>
-          How often do they snooze?
-        </p>
-        <p>
-          What categories do they implicitly use?
-        </p>
-        <p>
-          Mem0 is used for this second class of information, plus a mirrored memory trail of reminders for recall and continuity. We write active and archived reminders into Mem0 categories, but the model is never allowed to treat those as truth. The DB is the truth. Mem0 is the personalization layer.
+          Memory, on the other hand, is used for something very different: behavior, preferences, and context. Memory answers questions like how a user phrases reminders, what time patterns they confirm, how often they snooze, and what categories they implicitly use. Mem0 is used for this second class of information, plus a mirrored memory trail of reminders for recall and continuity. We write active and archived reminders into Mem0 categories, but the model is never allowed to treat those as truth. The DB is the truth. Mem0 is the personalization layer.
         </p>
         <p>
           This boundary is what allows the system to be both adaptive and correct. The agent can learn without becoming the source of truth. And that distinction is exactly what breaks down in most memory-augmented agents.
@@ -143,22 +89,7 @@
       <section class="section" id="from-idea-to-system">
         <h2>From idea to system: what MeowMem0 is made of</h2>
         <p>
-          At a high level, MeowMem0 is composed of four major parts:
-        </p>
-        <p>
-          Slack, as the real-world interface
-        </p>
-        <p>
-          A FastAPI backend, which orchestrates everything
-        </p>
-        <p>
-          A relational database, which holds reminder state
-        </p>
-        <p>
-          Mem0, which holds long-term memory
-        </p>
-        <p>
-          An LLM-based agent sits at the center, but it never directly mutates state. It reasons, decides, and calls tools. All real changes happen in deterministic code, with the model driven by the
+          At a high level, MeowMem0 is composed of four major parts: Slack as the real-world interface, a FastAPI backend that orchestrates everything, a relational database that holds reminder state, and Mem0 for long-term memory. An LLM-based agent sits at the center, but it never directly mutates state. It reasons, decides, and calls tools. All real changes happen in deterministic code, with the model driven by the
           <a href="https://platform.claude.com/docs/en/agent-sdk/overview" target="_blank" rel="noopener noreferrer">Claude Agent SDK</a>
           and a constrained tool surface.
         </p>
@@ -183,22 +114,7 @@
           Slack delivers events at least once. That means duplicate messages are not a corner case; they are expected behavior.
         </p>
         <p>
-          The backend exposes three HTTP endpoints:
-        </p>
-        <p>
-          POST /slack/events for Event API messages
-        </p>
-        <p>
-          POST /slack/commands for slash commands
-        </p>
-        <p>
-          POST /slack/interactions for button clicks
-        </p>
-        <p>
-          Every incoming request is authenticated using Slack’s signing secret to prevent replay attacks. Before any business logic runs, events are deduplicated using a short-TTL cache keyed by Slack’s event ID.
-        </p>
-        <p>
-          If you skip deduplication, you will eventually double-create reminders in production.
+          The backend exposes three HTTP endpoints: POST /slack/events for Event API messages, POST /slack/commands for slash commands, and POST /slack/interactions for button clicks. Every incoming request is authenticated using Slack’s signing secret to prevent replay attacks. Before any business logic runs, events are deduplicated using a short-TTL cache keyed by Slack’s event ID. If you skip deduplication, you will eventually double-create reminders in production.
         </p>
         <p>
           [CODE PLACEHOLDER: Slack signature verification + event deduplication logic]
@@ -211,41 +127,14 @@
       <section class="section" id="agent-loop">
         <h2>The agent loop: deterministic first, generative second</h2>
         <p>
-          Once a message is normalized, it enters a single orchestration loop.
-        </p>
-        <p>
-          Before calling the model, the system checks for pending multi-turn actions. These include cases like:
-        </p>
-        <p>
-          A reminder was created without a time
-        </p>
-        <p>
-          The system proposed a default time and is waiting for confirmation
-        </p>
-        <p>
-          The user said “reschedule that” and multiple reminders match
-        </p>
-        <p>
-          Short replies such as “yes,” “no,” or “the second one” are resolved using lightweight heuristics rather than another LLM call. This keeps flows predictable and avoids unnecessary inference costs.
-        </p>
-        <p>
-          Only when the system has enough information to act does it invoke the model.
-        </p>
-        <p>
-          This ordering is deliberate. Reminder systems fail when generative reasoning is allowed to override incomplete state.
+          Once a message is normalized, it enters a single orchestration loop. Before calling the model, the system checks for pending multi-turn actions, like a reminder created without a time, a proposed default time awaiting confirmation, or a reschedule request that matches multiple reminders. Short replies such as “yes,” “no,” or “the second one” are resolved using lightweight heuristics rather than another LLM call. This keeps flows predictable and avoids unnecessary inference costs. Only when the system has enough information to act does it invoke the model. This ordering is deliberate. Reminder systems fail when generative reasoning is allowed to override incomplete state.
         </p>
       </section>
 
       <section class="section" id="memory-prefetch">
         <h2>Memory prefetching: when not to remember</h2>
         <p>
-          One of the most subtle performance and quality issues in memory-augmented agents is over-fetching.
-        </p>
-        <p>
-          MeowMem0 explicitly decides whether memory is relevant for a given intent. Listing reminders usually doesn’t need personalization. Creating or disambiguating one often does.
-        </p>
-        <p>
-          When memory is needed, the system fetches targeted memories from Mem0, preferences and behavior summaries, then caches the result with a strict TTL to keep latency low.
+          One of the most subtle performance and quality issues in memory-augmented agents is over-fetching. MeowMem0 explicitly decides whether memory is relevant for a given intent. Listing reminders usually doesn’t need personalization. Creating or disambiguating one often does. When memory is needed, the system fetches targeted memories from Mem0, preferences and behavior summaries, then caches the result with a strict TTL to keep latency low.
         </p>
         <p>
           [SEQUENCE DIAGRAM PLACEHOLDER: Memory prefetch decision flow]
@@ -258,25 +147,7 @@
       <section class="section" id="system-prompt">
         <h2>The system prompt: enforcing a hard contract</h2>
         <p>
-          The system prompt is not creative. It is contractual.
-        </p>
-        <p>
-          It tells the model, explicitly:
-        </p>
-        <p>
-          The database is the source of truth for reminders
-        </p>
-        <p>
-          Mem0 provides personalization only
-        </p>
-        <p>
-          The model must never invent or assume reminder state
-        </p>
-        <p>
-          All state changes must happen via tools
-        </p>
-        <p>
-          Claude is given a narrow toolset: create, update, snooze, list, mark done. When it decides an action is required, it emits a structured tool call. No state is mutated inside the prompt.
+          The system prompt is not creative. It is contractual. It tells the model, explicitly, that the database is the source of truth for reminders, Mem0 provides personalization only, the model must never invent or assume reminder state, and all state changes must happen via tools. Claude is given a narrow toolset: create, update, snooze, list, mark done. When it decides an action is required, it emits a structured tool call. No state is mutated inside the prompt.
         </p>
         <p>
           [CODE PLACEHOLDER: Tool definitions and example tool invocation]
@@ -363,17 +234,7 @@
       <section class="section" id="prompt-building">
         <h2>Prompt building: truth first, memory second</h2>
         <p>
-          The prompt is assembled from two sources with different guarantees. First,
-          we load the current reminder state from the database and render it directly
-          into the system prompt. This makes the model’s view of reality deterministic:
-          it can’t hallucinate or override actual reminder status. Second, we enrich
-          with Mem0 signals, preferences and behavior summaries, so the agent can adapt
-          without drifting. We intentionally keep that memory slice small and targeted.
-        </p>
-        <p>
-          The result is a prompt that feels personalized but stays grounded. It’s
-          enough to suggest a default time or interpret a user’s pattern, but not
-          enough to blur the boundary between memory and state.
+          The prompt is assembled from two sources with different guarantees. First, we load the current reminder state from the database and render it directly into the system prompt. This makes the model’s view of reality deterministic. It can’t hallucinate or override actual reminder status. Second, we enrich with Mem0 signals, preferences and behavior summaries, so the agent can adapt without drifting. We intentionally keep that memory slice small and targeted. The result is a prompt that feels personalized but stays grounded. It’s enough to suggest a default time or interpret a user’s pattern, but not enough to blur the boundary between memory and state.
         </p>
         <p>
           [CODE PLACEHOLDER: system prompt assembly showing DB reminders + Mem0 memory context]
@@ -383,16 +244,7 @@
       <section class="section" id="missing-time">
         <h2>Reminder creation and the missing-time problem</h2>
         <p>
-          Users frequently omit times: “tomorrow,” “later,” “in the evening.”
-        </p>
-        <p>
-          Guessing is dangerous. Asking repeatedly is annoying.
-        </p>
-        <p>
-          MeowMem0 resolves this by combining inference with confirmation. If no time is supplied, the system infers a category and looks up the user’s most common confirmed times for that category from behavior memory. It proposes a default and asks for explicit confirmation before scheduling.
-        </p>
-        <p>
-          This preserves user trust while reducing friction.
+          Users frequently omit times: “tomorrow,” “later,” “in the evening.” Guessing is dangerous. Asking repeatedly is annoying. MeowMem0 resolves this by combining inference with confirmation. If no time is supplied, the system infers a category and looks up the user’s most common confirmed times for that category from behavior memory. It proposes a default and asks for explicit confirmation before scheduling. This preserves user trust while reducing friction.
         </p>
         <p>
           [SCREENSHOT PLACEHOLDER: Time confirmation flow in Slack]
@@ -408,16 +260,7 @@
           [DIAGRAM PLACEHOLDER: Database schema overview]
         </p>
         <p>
-          The database is what makes the system reliable. If Mem0 is unavailable, reminders still fire. If the model misbehaves, state remains correct.
-        </p>
-        <p>
-          A useful rule of thumb emerged during development:
-        </p>
-        <p>
-          If losing the data would break correctness, it belongs in the database.
-        </p>
-        <p>
-          If losing it would only reduce personalization, it belongs in memory.
+          The database is what makes the system reliable. If Mem0 is unavailable, reminders still fire. If the model misbehaves, state remains correct. A useful rule of thumb emerged during development: if losing the data would break correctness, it belongs in the database. If losing it would only reduce personalization, it belongs in memory.
         </p>
       </section>
 
@@ -425,44 +268,14 @@
         <h2>Mem0: long-term memory without drift</h2>
         <p>
           <a href="https://docs.mem0.ai/introduction" target="_blank" rel="noopener noreferrer">Mem0</a>
-          stores long-term signals and a mirrored reminder history using explicit categories:
-        </p>
-        <p>
-          Active reminders
-        </p>
-        <p>
-          Archived reminders
-        </p>
-        <p>
-          User preferences
-        </p>
-        <p>
-          Behavior summaries
-        </p>
-        <p>
-          Optional conversation memory
-        </p>
-        <p>
-          When a reminder is marked done, its active memory is removed and an archived memory is written instead. This avoids stale memory influencing future behavior while keeping history searchable.
-        </p>
-        <p>
-          The mirror is never treated as authoritative state. It’s there to improve recall and personalization, not to decide what should fire.
-        </p>
-        <p>
-          Behavior is summarized rather than logged raw. The model sees patterns, not noise.
-        </p>
-        <p>
-          This is how MeowMem0 learns over time without accumulating contradictions.
+          stores long-term signals and a mirrored reminder history using explicit categories: active reminders, archived reminders, user preferences, behavior summaries, and optional conversation memory. When a reminder is marked done, its active memory is removed and an archived memory is written instead. This avoids stale memory influencing future behavior while keeping history searchable. The mirror is never treated as authoritative state. It’s there to improve recall and personalization, not to decide what should fire. Behavior is summarized rather than logged raw. The model sees patterns, not noise. This is how MeowMem0 learns over time without accumulating contradictions.
         </p>
       </section>
 
       <section class="section" id="notifications">
         <h2>Notifications and archiving: separating time from conversation</h2>
         <p>
-          Reminder delivery runs independently from the agent loop. A background process checks for due reminders and sends Slack notifications with interactive controls.
-        </p>
-        <p>
-          Each reminder tracks its last notification timestamp to avoid duplicate pings. Overdue reminders are archived via an external cron endpoint, which keeps scheduling reliable even if the app instance sleeps or restarts.
+          Reminder delivery runs independently from the agent loop. A background process checks for due reminders and sends Slack notifications with interactive controls. Each reminder tracks its last notification timestamp to avoid duplicate pings. Overdue reminders are archived via an external cron endpoint, which keeps scheduling reliable even if the app instance sleeps or restarts.
         </p>
         <p>
           [DIAGRAM PLACEHOLDER: Notification + archival flow]
@@ -472,19 +285,9 @@
       <section class="section" id="slack-app-setup">
         <h2>Slack app integration: wiring the bot into a workspace</h2>
         <p>
-          The backend endpoints are only half the story. To make the bot real, you
-          register a Slack app and point it to your public URLs. This is done in the
-          Slack app dashboard at
+          The backend endpoints are only half the story. To make the bot real, you register a Slack app and point it to your public URLs. This is done in the Slack app dashboard at
           <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer">api.slack.com/apps</a>.
-          Once the app is created, you enable Events, Commands, and Interactivity and
-          paste in the endpoints your FastAPI service exposes.
-        </p>
-        <p>
-          For MeowMemo, the app expects <span class="code">/slack/events</span> for
-          event callbacks, <span class="code">/slack/commands</span> for slash commands,
-          and <span class="code">/slack/interactions</span> for button actions. The
-          signing secret and bot token are stored in the backend environment so the
-          service can verify requests and post responses back into Slack.
+          Once the app is created, you enable Events, Commands, and Interactivity and paste in the endpoints your FastAPI service exposes. For MeowMem0, the app expects <span class="code">/slack/events</span> for event callbacks, <span class="code">/slack/commands</span> for slash commands, and <span class="code">/slack/interactions</span> for button actions. The signing secret and bot token are stored in the backend environment so the service can verify requests and post responses back into Slack.
         </p>
         <p>
           [SCREENSHOT PLACEHOLDER: Slack app settings with Events + Interactivity URLs]
@@ -494,27 +297,9 @@
       <section class="section" id="what-this-enables">
         <h2>What this architecture enables</h2>
         <p>
-          MeowMem0 is not interesting because it sends reminders. It’s interesting because it demonstrates a pattern for building AI agents that last.
-        </p>
-        <p>
-          You can have long-term personalization without letting memory become truth.
-        </p>
-        <p>
-          You can archive without forgetting.
-        </p>
-        <p>
-          You can adapt behavior without inflating prompts.
-        </p>
-        <p>
-          You can build assistants that improve over time without becoming unreliable.
-        </p>
-        <p>
-          This is what memory layers like Mem0 are actually for, not longer context windows, but clean, intentional persistence. The underlying model capabilities are anchored by the
+          MeowMem0 is not interesting because it sends reminders. It’s interesting because it demonstrates a pattern for building AI agents that last. You can have long-term personalization without letting memory become truth. You can archive without forgetting. You can adapt behavior without inflating prompts. You can build assistants that improve over time without becoming unreliable. This is what memory layers like Mem0 are actually for, not longer context windows, but clean, intentional persistence. The underlying model capabilities are anchored by the
           <a href="https://platform.claude.com/docs/en/home" target="_blank" rel="noopener noreferrer">Claude platform</a>,
-          but the reliability comes from the contract we enforce around it.
-        </p>
-        <p>
-          If you’re building agents meant to live beyond a demo, this boundary between state and memory isn’t optional. It’s the difference between something users try once and something they trust every day.
+          but the reliability comes from the contract we enforce around it. If you’re building agents meant to live beyond a demo, this boundary between state and memory isn’t optional. It’s the difference between something users try once and something they trust every day.
         </p>
       </section>
 
