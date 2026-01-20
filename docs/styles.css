@@ -105,6 +105,22 @@ h1 {
   font-weight: 600;
 }
 
+.media {
+  margin: 16px 0 24px;
+}
+
+.media img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--stroke);
+}
+
+.media figcaption {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 pre {
   margin: 12px 0;
   background: #ffffff;
