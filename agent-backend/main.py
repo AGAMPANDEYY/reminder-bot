@@ -1251,7 +1251,7 @@ def get_mem0_context(user_message: str, user_id: str = "default_user", skip_mem0
         "results_count": len(behavior_memories)
     })
 
-    pref_memories = mem0_store.search_preferences(user_message, user_id, limit=5)
+    pref_memories = mem0_store.search_preferences("preference", user_id, limit=5)
     debug_context["mem0_queries"].append({
         "query": user_message,
         "category": "user_prefs",

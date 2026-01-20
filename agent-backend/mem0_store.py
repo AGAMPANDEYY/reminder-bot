@@ -209,15 +209,16 @@ class Mem0Store:
     ) -> List[Dict[str, Any]]:
         """Search user preferences"""
         try:
+            if not query:
+                query = "preference"
             results = self._search_with_filters(
                 query=query,
                 user_id=user_id,
                 categories=[self.CAT_USER_PREFS],
-                async_mode=False,
                 limit=limit
             )
-            
-            return [
+
+            memories = [
                 {
                     "id": item.get("id"),
                     "memory": item.get("memory"),
@@ -225,6 +226,22 @@ class Mem0Store:
                     "score": item.get("score", 0)
                 }
                 for item in results
+            ]
+            if memories:
+                return memories
+
+            fallback = self.get_all_memories(
+                user_id=user_id,
+                categories=[self.CAT_USER_PREFS]
+            )
+            return [
+                {
+                    "id": item.get("id"),
+                    "memory": item.get("memory"),
+                    "metadata": item.get("metadata", {}),
+                    "score": item.get("score", 0)
+                }
+                for item in fallback[:limit]
             ]
         except Exception as e:
             print(f"Mem0 preference search error: {e}")
@@ -242,7 +259,6 @@ class Mem0Store:
                 query=query,
                 user_id=user_id,
                 categories=[self.CAT_CONVERSATION],
-                async_mode=False,
                 limit=limit
             )
             
@@ -267,15 +283,16 @@ class Mem0Store:
     ) -> List[Dict[str, Any]]:
         """Search behavior summaries"""
         try:
+            if not query:
+                query = "behavior_summary"
             results = self._search_with_filters(
                 query=query,
                 user_id=user_id,
                 categories=[self.CAT_USER_BEHAVIOR],
-                async_mode=False,
                 limit=limit
             )
 
-            return [
+            memories = [
                 {
                     "id": item.get("id"),
                     "memory": item.get("memory"),
@@ -283,6 +300,22 @@ class Mem0Store:
                     "score": item.get("score", 0)
                 }
                 for item in results
+            ]
+            if memories:
+                return memories
+
+            fallback = self.get_all_memories(
+                user_id=user_id,
+                categories=[self.CAT_USER_BEHAVIOR]
+            )
+            return [
+                {
+                    "id": item.get("id"),
+                    "memory": item.get("memory"),
+                    "metadata": item.get("metadata", {}),
+                    "score": item.get("score", 0)
+                }
+                for item in fallback[:limit]
             ]
         except Exception as e:
             print(f"Mem0 behavior search error: {e}")
