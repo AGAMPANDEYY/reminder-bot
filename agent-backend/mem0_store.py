@@ -156,6 +156,8 @@ class Mem0Store:
                     if self.debug:
                         print("Mem0 search error:", results)
                     return []
+            if isinstance(results.get("results"), list):
+                return results["results"]
             if isinstance(results.get("memories"), list):
                 return results["memories"]
             if isinstance(results.get("data"), list):
@@ -603,7 +605,9 @@ class Mem0Store:
                         if self.debug:
                             print("Mem0 get all error:", results)
                         return []
-                    if isinstance(results.get("memories"), list):
+                    if isinstance(results.get("results"), list):
+                        results = results["results"]
+                    elif isinstance(results.get("memories"), list):
                         results = results["memories"]
                     elif isinstance(results.get("data"), list):
                         results = results["data"]
@@ -632,7 +636,8 @@ class Mem0Store:
                     category_set = set(categories)
                     return [
                         m for m in memories
-                        if m.get("metadata", {}).get("mem0_category") in category_set
+                        if (m.get("metadata", {}) or {}).get("mem0_category") in category_set
+                        or any(cat in category_set for cat in (m.get("categories") or []))
                     ]
                 return memories
             except Exception as e:
