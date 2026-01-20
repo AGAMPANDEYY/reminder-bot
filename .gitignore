@@ -4,3 +4,6 @@ venv
 agent-backend/.env
 agent-backend/data.db
 agent-backend/__pycache__
+wa-webhook/
+chat-ui/
+app.js/
